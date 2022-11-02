@@ -1,6 +1,10 @@
 package com.example.csse_backend.controller;
+import com.example.csse_backend.entities.Item;
 import com.example.csse_backend.entities.PurchaseOrder;
+import com.example.csse_backend.repo.ItemRepo;
+import com.example.csse_backend.service.ItemService;
 import com.example.csse_backend.service.PurchaseOrderService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +21,22 @@ public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
 
-    public PurchaseOrderController(PurchaseOrderService purchaseOrderService){
+    private final ItemService itemService;
+
+
+    public PurchaseOrderController(PurchaseOrderService purchaseOrderService,ItemService itemService){
         this.purchaseOrderService = purchaseOrderService;
+        this.itemService = itemService;
     }
 
     @PostMapping("/new_purchase_order")
     public ResponseEntity<PurchaseOrder> newPurchaseOrder(@RequestBody PurchaseOrder purchaseOrder){
-            return new ResponseEntity<>(purchaseOrderService.newPurchaseOrder(purchaseOrder), HttpStatus.CREATED);
+            PurchaseOrder purchaseOrdern = purchaseOrderService.newPurchaseOrder(purchaseOrder);
+            for(Item item:purchaseOrder.getItems()){
+                item.setPurchaseOrder(purchaseOrder);
+                itemService.newItem(item);
+            }
+            return new ResponseEntity<>(purchaseOrdern, HttpStatus.CREATED);
     }
 
 
@@ -35,9 +48,22 @@ public class PurchaseOrderController {
                 .build());
     }
 
-   /* @GetMapping(value = "/orders_json")
-    List<PurchaseOrder> getPurchaseOrdersJson() {
-        Flux<PurchaseOrder> purchaseOrderFlux = purchaseOrderService.getAllPurchaseOrders();
-        return purchaseOrderFlux.collectList().block();
-    }*/
+    @PostMapping("/update_status/{id}/{status}")
+    public ResponseEntity<?> updateStatus(@PathVariable long id,@PathVariable String status){
+        PurchaseOrder purchaseOrder = purchaseOrderService.getPurchaseOrderById(id);
+        purchaseOrder.setStatus(status);
+        purchaseOrderService.newPurchaseOrder(purchaseOrder);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/order/{id}")
+    public PurchaseOrder getOrderById(@PathVariable long id){
+        return purchaseOrderService.getPurchaseOrderById(id);
+    }
+
+    @GetMapping("/search/{siteName}")
+    public List<PurchaseOrder> getPurchaseOrderBySiteName(@PathVariable String siteName){
+        return purchaseOrderService.getPurchaseOrdersBySiteName(siteName);
+    }
+
 }

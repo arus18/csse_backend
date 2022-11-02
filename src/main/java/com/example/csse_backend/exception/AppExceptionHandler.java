@@ -10,7 +10,12 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class AppExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {CustomPurchaseOrderException.class})
-    public ResponseEntity handleAdminNotFoundException(CustomPurchaseOrderException ex, WebRequest webRequest){
+    public ResponseEntity handleOrderNotFoundException(CustomPurchaseOrderException ex, WebRequest webRequest){
+        return new ResponseEntity<>(ex.ERROR, HttpStatus.OK);
+    }
+
+    @ExceptionHandler(value = {CustomItemException.class})
+    public ResponseEntity handleItemNotFoundException(CustomItemException ex, WebRequest webRequest){
         return new ResponseEntity<>(ex.ERROR, HttpStatus.OK);
     }
 

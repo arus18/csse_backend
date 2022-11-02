@@ -26,13 +26,21 @@ public class PurchaseOrderService {
         }
     }
 
-    public PurchaseOrder getPurchaseOrderById(int id){
+    public PurchaseOrder getPurchaseOrderById(long id){
         try{
             Optional<PurchaseOrder> purchaseOrder = purchaseOrderRepo.findById(id);
             if(purchaseOrder.isPresent()){
                 return purchaseOrder.get();
             }
             throw new CustomPurchaseOrderException("Purchase Order Not Found");
+        }catch(Exception e){
+            throw e;
+        }
+    }
+
+    public List<PurchaseOrder> getPurchaseOrdersBySiteName(String name){
+        try{
+            return purchaseOrderRepo.findPurchaseOrderBySiteName(name);
         }catch(Exception e){
             throw e;
         }
